@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package dev.moment.differential.v1;
+
+import "google/protobuf/struct.proto";
+import "rbt/v1alpha1/options.proto";
+
+////////////////////////////////////////////////////////////////////////
+
+service DocumentMethods {
+  rpc Create(CreateRequest) returns (CreateResponse) {
+    option (rbt.v1alpha1.method).writer = {
+    };
+  }
+
+  rpc Apply(ApplyRequest) returns (ApplyResponse) {
+    option (rbt.v1alpha1.method) = {
+      writer: {},
+      errors: ["InvalidOperation"],
+    };
+  }
+
+  rpc Changes(ChangesRequest) returns (ChangesResponse) {
+    option (rbt.v1alpha1.method).reader = {
+    };
+  }
+}
+
+////////////////////////////////////////////////////////////////////////
+
+message Document {
+  option (rbt.v1alpha1.state) = {
+  };
+  repeated Patch patches = 1;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+message Patch {
+  repeated Operation operations = 1;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+message Operation {
+  string op = 1;
+  string path = 2;
+  optional google.protobuf.Value value = 3;
+  optional string from = 4;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+message CreateRequest {}
+
+message CreateResponse {
+  google.protobuf.Value value = 1;
+  uint32 version = 2;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+message ApplyRequest {
+  uint32 version = 1;
+  repeated Operation operations = 2;
+}
+
+message ApplyResponse {}
+
+////////////////////////////////////////////////////////////////////////
+
+message ChangesRequest {
+  uint32 since_version = 1;
+}
+
+message ChangesResponse {
+  uint32 version = 1;
+  repeated Patch patches = 2;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+message InvalidOperation {
+  string message = 1;
+  int32 index = 2;
+}
+
+////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,17 @@
+{
+  "name": "@monorepo/backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "rbt dev run",
+    "prepare": "rbt --help"
+  },
+  "dependencies": {
+    "@monorepo/api": "workspace:*",
+    "@monorepo/common": "workspace:*",
+    "@reboot-dev/reboot": "0.25.1",
+    "@reboot-dev/reboot-api": "0.25.1",
+    "fast-json-patch": "3.1.1"
+  }
+}
