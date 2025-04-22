@@ -66,12 +66,13 @@ export function reactively<
       // Otherwise abort current `responses` so that we'll restart
       // with the new request.
       responsesAbortController.abort();
+
+      responsesAbortController = new AbortController();
     }
   };
 
   const responses = {
     [Symbol.asyncIterator]: async function* () {
-
       // Wait for either the first request or an abort.
       await Promise.race([
         firstRequest.wait(),

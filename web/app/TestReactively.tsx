@@ -19,15 +19,19 @@ export default function TestReactively({ url, id }) {
       });
 
       // NOTE: can also pass first request as `request` to `reactively`.
-      setRequest({ sinceVersion: 0 });
+      let sinceVersion = 0;
+      setRequest({ sinceVersion });
 
       for await (const { version, patches } of responses) {
         for (const patch of patches) {
           setOperations((operations) => [...operations, patch.operations]);
         }
 
-        // Update the request so we get the next set of patches.
-        setRequest({ sinceVersion: version + patches.length });
+        // Update the request if we got a new version.
+        if (version + patches.length > sinceVersion) {
+          sinceVersion = version + patches.length;
+          setRequest({ sinceVersion });
+        }
       }
     })();
   }, []);
