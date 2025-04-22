@@ -85,10 +85,18 @@ class Document_Servicer<View, Servicer extends Document_MaterializingServicer<Vi
     request: CreateRequest
   ): Promise<PartialMessage<CreateResponse>> {
     // Create materialized view based on current state and any cached existing view.
-    const view = this.materializer.materialize(state, this.views[context.stateId]);
+    let view = this.materializer.materialize(state, this.views[context.stateId]);
 
     // Cache last materialized view.
+    //
+    // TODO: DO NOT CACHE IF WITHIN A TRANSACTION AS THAT VIEW HAS NOT YET BEEN
+    // COMMITTED! ALTERNATIVELY WE COULD HAVE A SEPARATE CACHE FOR VIEWS MATERIALIZED
+    // WITHIN THE TRANSACTION FOR BETTER PERFORMANCE.
     this.views[context.stateId] = view;
+
+    // Clone view since don't want any updates to `view` during the call
+    // to the method to have any impact because that would be a _side-effect_.
+    view = this.materializer.clone(view);
 
     return await this.servicer.create(context, state, view, request);
   }
@@ -99,10 +107,18 @@ class Document_Servicer<View, Servicer extends Document_MaterializingServicer<Vi
     request: ApplyRequest
   ): Promise<PartialMessage<ApplyResponse>> {
     // Create materialized view based on current state and any cached existing view.
-    const view = this.materializer.materialize(state, this.views[context.stateId]);
+    let view = this.materializer.materialize(state, this.views[context.stateId]);
 
     // Cache last materialized view.
+    //
+    // TODO: DO NOT CACHE IF WITHIN A TRANSACTION AS THAT VIEW HAS NOT YET BEEN
+    // COMMITTED! ALTERNATIVELY WE COULD HAVE A SEPARATE CACHE FOR VIEWS MATERIALIZED
+    // WITHIN THE TRANSACTION FOR BETTER PERFORMANCE.
     this.views[context.stateId] = view;
+
+    // Clone view since don't want any updates to `view` during the call
+    // to the method to have any impact because that would be a _side-effect_.
+    view = this.materializer.clone(view);
 
     return await this.servicer.apply(context, state, view, request);
   }
@@ -116,6 +132,10 @@ class Document_Servicer<View, Servicer extends Document_MaterializingServicer<Vi
     let view = this.materializer.materialize(state, this.views[context.stateId]);
 
     // Cache last materialized view.
+    //
+    // TODO: DO NOT CACHE IF WITHIN A TRANSACTION AS THAT VIEW HAS NOT YET BEEN
+    // COMMITTED! ALTERNATIVELY WE COULD HAVE A SEPARATE CACHE FOR VIEWS MATERIALIZED
+    // WITHIN THE TRANSACTION FOR BETTER PERFORMANCE.
     this.views[context.stateId] = view;
 
     // Clone view since `reader`s may run concurrently.
